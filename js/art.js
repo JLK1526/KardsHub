@@ -21,7 +21,9 @@ function rng(seed) {
 const SKY = {
   ger: [['#5d6660','#a8a28a','#d6b27a'], ['#414c52','#7d8a86','#c2ad86'], ['#4a4b42','#8c8567','#c9a06a']],
   usa: [['#4c5b46','#9aa066','#e0c284'], ['#3d5250','#839a78','#dcc189'], ['#54503c','#a09359','#e6c88a']],
-  uk:  [['#6b5a43','#b09568','#e3c48d'], ['#4b4a42','#9c8a68','#d9b984'], ['#5c5140','#a58c60','#e0bd82']]
+  uk:  [['#6b5a43','#b09568','#e3c48d'], ['#4b4a42','#9c8a68','#d9b984'], ['#5c5140','#a58c60','#e0bd82']],
+  sov: [['#4d5560','#8a95a0','#d6bd9e'], ['#3c4a4a','#7c8a82','#cbb89a'], ['#524a48','#9a8770','#d9b89a']],
+  jpn: [['#3f5a5a','#86a39a','#e0c79a'], ['#4a4e6a','#8a8fb0','#dcc6a0'], ['#5a4a44','#a08770','#e3c79a']]
 };
 
 /* 主插画：viewBox 0 0 200 150 */
@@ -180,7 +182,25 @@ function nationBadge(n, size) {
           <path d="M4,4 L28,28 M28,4 L4,28" stroke="#f0ece0" stroke-width="6"/>
           <path d="M4,4 L28,28 M28,4 L4,28" stroke="#bd4136" stroke-width="2.4"/>
           <path d="M16,4 V28 M4,16 H28" stroke="#f0ece0" stroke-width="7"/>
-          <path d="M16,4 V28 M4,16 H28" stroke="#bd4136" stroke-width="3.6"/>`
+          <path d="M16,4 V28 M4,16 H28" stroke="#bd4136" stroke-width="3.6"/>`,
+    sov: `<rect x="4" y="4" width="24" height="24" rx="3" fill="#4a1518"/>
+          <path d="M16,7.5 L18,13.3 L24.1,13.4 L19.2,17 L21,22.9 L16,19.4 L11,22.9 L12.8,17 L7.9,13.4 L14,13.3 Z" fill="#e23b2e" stroke="#e8c34a" stroke-width="1"/>`,
+    jpn: `<rect x="4" y="4" width="24" height="24" rx="3" fill="#2c3340"/>
+          <g transform="translate(16,16)" fill="#e23b2e">
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(30)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(60)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(90)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(120)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(150)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(180)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(210)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(240)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(270)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(300)"/>
+            <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(330)"/>
+            <circle cx="0" cy="0" r="5"/>
+          </g>`
   };
   return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">${inner[n] || ''}</svg>`;
 }
