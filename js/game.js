@@ -70,6 +70,7 @@ function startNewGame() {
     },
     board: { foe:Array(4).fill(null), front:Array(5).fill(null), player:Array(4).fill(null) },
     selectedHand: null, selectedUnit: null,
+    inspect: null,           // 右侧预览区当前展示的 { id, uid }
     pending: null,           // 待选目标的指令 / 部署效果
     targetMode: null,        // 'attack' | 'spell'
     autoEndScheduled: false, autoEndTimer: null,
@@ -82,7 +83,6 @@ function startNewGame() {
 
   $('#startScreen').classList.add('hidden');
   $('#gameScreen').classList.remove('hidden');
-  $('#preview').classList.add('hidden');
   $('#overlay').classList.add('hidden');
   $('#logBody').innerHTML = '';
 
@@ -126,6 +126,7 @@ function startTurn(side, first) {
   if (side === 'player') {
     $('#endTurnBtn').classList.remove('waiting');
     $('#endTurnSub').textContent = 'END TURN';
+    checkAutoEnd();   // 回合一开始就没有可打出的牌时，同样自动结束
   } else {
     $('#endTurnBtn').classList.add('waiting');
     $('#endTurnSub').textContent = '敌方行动中';
@@ -149,34 +150,58 @@ function nextPlayerTurn() {
   startTurn('player');
 }
 
-/* ---------------- 指挥点耗尽 → 自动结束回合 ---------------- */
+/* ---------------- 无可用行动 → 自动结束玩家回合 ---------------- */
 function cancelAutoEnd() {
   if (!S) return;
   if (S.autoEndTimer) { clearTimeout(S.autoEndTimer); S.autoEndTimer = null; }
   if (S.autoEndScheduled) $('#hint').classList.add('hidden');
   S.autoEndScheduled = false;
 }
+// 是否还有能打出的手牌（费用够 + 单位卡要有空位可放）
+function canPlayAnyCard(p) {
+  return p.hand.some(h => {
+    const c = CARD_INDEX[h.id];
+    if (!c || c.cost > p.kredit) return false;
+    if (!isUnit(c)) return true;
+    const canFront = hasEffect(c, 'deployFront')
+      && (frontOwner() === 'none' || frontOwner() === 'player')
+      && freeIndex('front') >= 0;
+    return freeIndex('player') >= 0 || canFront;
+  });
+}
+// 玩家是否还有任何可执行操作：能出牌，或场上单位还能移动 / 攻击
+function hasPlayerAction() {
+  if (!S || S.over) return false;
+  if (canPlayAnyCard(S.p.player)) return true;
+  return allUnits('player').some(u => canMove(u) || canAttack(u));
+}
 function scheduleAutoEnd() {
   if (S.autoEndScheduled || S.over) return;
   S.autoEndScheduled = true;
   const gen = S.gen;
-  log('指挥点耗尽 · 自动结束回合', 'sys');
-  showHint('指挥点耗尽 · 自动结束回合', true);
+  const text = S.p.player.kredit <= 0
+    ? '指挥点耗尽 · 自动结束回合'
+    : '无牌可出 / 无可用行动 · 自动结束回合';
+  log(text, 'sys');
+  showHint(text, true);
   S.autoEndTimer = setTimeout(() => {
     if (!S || S.gen !== gen) return;
     S.autoEndTimer = null;
     S.autoEndScheduled = false;
-    if (S.over || S.current !== 'player' || S.phase === 'ai') return;
-    if (S.p.player.kredit > 0) return;   // 等待期间又获得指挥点则取消
+    if (S.over || S.current !== 'player' || S.phase === 'ai' || S.phase === 'target' || S.pending) return;
+    if (hasPlayerAction()) return;   // 等待期间又变得可行动则取消
     endTurn();
   }, 700);
+}
+function checkAutoEnd() {
+  if (!S || S.over || S.current !== 'player' || S.phase === 'ai' || S.phase === 'target' || S.pending) return;
+  if (hasPlayerAction()) { cancelAutoEnd(); return; }
+  scheduleAutoEnd();
 }
 /* 每次花掉指挥点后调用：只有玩家侧需要自动结束，AI 侧由 runAI 自行收尾 */
 function afterKreditSpent(side) {
   if (!S || S.over || side !== 'player') return;
-  if (S.p.player.kredit > 0) return;
-  if (S.current !== 'player' || S.phase === 'ai' || S.phase === 'target' || S.pending) return;
-  scheduleAutoEnd();
+  checkAutoEnd();
 }
 
 function draw(side, n, silent) {
@@ -582,6 +607,8 @@ async function runAI(gen) {
 function render() {
   if (!S) return;
   renderHUD(); renderHand(); renderBoard();
+  applyInspectSelection();
+  renderInspect();
 }
 
 function renderHUD() {
@@ -711,6 +738,53 @@ function renderBoard() {
   $('#playerHQ').classList.remove('targetable');
 }
 
+/* ---------------- 右侧固定卡牌预览 ---------------- */
+function setInspect(cardId, unitUid) {
+  if (!S) return;
+  const uid = unitUid || null;
+  if (!cardId) {
+    if (S.inspect) { S.inspect = null; renderInspect(); }
+    return;
+  }
+  if (S.inspect && S.inspect.id === cardId && S.inspect.uid === uid) return;
+  S.inspect = { id: cardId, uid };
+  renderInspect();
+}
+// 有明确选中项时，预览优先跟随选中项；否则保留最后查看的卡
+function applyInspectSelection() {
+  if (!S) return;
+  if (S.selectedHand) {
+    const h = S.p.player.hand.find(x => x.uid === S.selectedHand);
+    if (h) { S.inspect = { id: h.id, uid: null }; return; }
+  }
+  if (S.selectedUnit) {
+    const f = findUnit(S.selectedUnit);
+    if (f) { S.inspect = { id: f.unit.id, uid: f.unit.uid }; return; }
+  }
+}
+function renderInspect() {
+  const body = $('#inspectBody'), foot = $('#inspectFoot');
+  if (!body || !foot) return;
+  let card = S && S.inspect ? CARD_INDEX[S.inspect.id] : null;
+  let unit = null;
+  if (card && S.inspect.uid) {
+    const f = findUnit(S.inspect.uid);
+    if (f) unit = f.unit;
+    else { S.inspect = null; card = null; }   // 单位已阵亡 / 离场
+  }
+  if (!card) {
+    body.innerHTML = '<div class="inspect-empty"><span class="ie-ic">✧</span>将鼠标移到卡牌上<br>或点选卡牌，在此查看大图</div>';
+    foot.textContent = '— 暂无选中卡牌 —';
+    return;
+  }
+  body.innerHTML = cardHTML(card, { unit });
+  const k = S.p.player.kredit;
+  const usable = S.current === 'player'
+    ? (card.cost > k ? `指挥点不足 · 需要 ${card.cost} 点` : `可打出 · 消耗 ${card.cost} 点`)
+    : '敌方回合';
+  foot.textContent = `${TYPE_META[card.type].name} ｜ 部署 ${card.cost}${isUnit(card) ? ' · 行动 ' + card.op : ''} ｜ ${usable}`;
+}
+
 /* ---------------- 交互 ---------------- */
 function clearSelection() {
   if (!S) return;
@@ -718,7 +792,6 @@ function clearSelection() {
   S.targetMode = null; S.pending = null;
   if (S.phase !== 'ai' && !S.over) S.phase = 'idle';
   if (!S.autoEndScheduled) $('#hint').classList.add('hidden');  // 保留自动结束提示
-  $('#preview').classList.add('hidden');
   render();
 }
 
@@ -865,45 +938,21 @@ function bindGameEvents() {
     clearSelection();
   });
 
-  // 大图预览：缩小后跟随鼠标，且始终留在视口内
-  let previewCardId = null;
-  const pv = $('#preview');
-  function positionPreview(e) {
-    if (pv.classList.contains('hidden')) return;
-    const box = pv.firstElementChild;
-    const w = box ? box.offsetWidth : 158;
-    const h = box ? box.offsetHeight : 232;
-    const gap = 18;
-    let left = e.clientX + gap;
-    if (left + w > window.innerWidth - 8) left = e.clientX - gap - w;
-    left = Math.max(8, left);
-    // 浮在鼠标上方，并整体收在底部 HUD / 手牌区之上，避免遮挡
-    const bottomZone = document.querySelector('.bottom-zone');
-    const limit = bottomZone ? bottomZone.getBoundingClientRect().top : window.innerHeight - 240;
-    let top = e.clientY - h - 16;
-    if (top + h > limit - 8) top = limit - h - 8;
-    top = Math.max(8, Math.min(top, window.innerHeight - h - 8));
-    pv.style.left = Math.round(left) + 'px';
-    pv.style.top = Math.round(top) + 'px';
-  }
+  // 右侧卡牌预览：悬停查看；移开后回落到当前选中的卡（无选中则保留最后一张）
   gs.addEventListener('mouseover', e => {
+    if (e.target.closest('#inspectBody')) return;
     const c = e.target.closest('.card'); if (!c) return;
     const id = c.dataset.cardId;
-    if (previewCardId !== id || pv.classList.contains('hidden')) {
-      const card = CARD_INDEX[id]; if (!card) return;
-      pv.innerHTML = cardHTML(card, { unit:null });
-      previewCardId = id;
-      pv.classList.remove('hidden');
-    }
-    positionPreview(e);
+    if (!id || !CARD_INDEX[id]) return;
+    setInspect(id, c.dataset.uid || null);
   });
   gs.addEventListener('mouseout', e => {
+    if (e.target.closest('#inspectBody')) return;
     const c = e.target.closest('.card'); if (!c) return;
     if (e.relatedTarget && c.contains(e.relatedTarget)) return;  // 仍在卡内，不闪烁
-    pv.classList.add('hidden');
-    previewCardId = null;
+    applyInspectSelection();
+    renderInspect();
   });
-  gs.addEventListener('mousemove', positionPreview);
 
   // 键盘：空格结束回合 / Esc 取消
   document.addEventListener('keydown', e => {

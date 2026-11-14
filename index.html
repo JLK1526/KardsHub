@@ -159,6 +159,19 @@
         <div class="slots" id="playerSlots" data-page-node-id="1ep3xoD2F4BjAYW9MC6IDM"></div>
       </div>
     </div>
+
+    <!-- 右侧信息栏：上半 对局记录 / 下半 卡牌预览 -->
+    <aside class="side-panel">
+      <div class="side-block log-block">
+        <div class="side-h">对 局 记 录</div>
+        <div class="log-body" id="logBody"></div>
+      </div>
+      <div class="side-block inspect-block">
+        <div class="side-h">卡 牌 预 览</div>
+        <div class="inspect-body" id="inspectBody"></div>
+        <div class="inspect-foot" id="inspectFoot">— 暂无选中卡牌 —</div>
+      </div>
+    </aside>
   </div>
 
   <!-- 底部 -->
@@ -182,13 +195,8 @@
   <button class="end-turn" id="endTurnBtn" data-page-node-id="G5lzklTLjLXvTuFZun1nES">结束回合<small id="endTurnSub" data-page-node-id="2jGoGXJRAq9aHGWf0bGsX5">END TURN</small></button>
   <div class="hint hidden" id="hint" data-page-node-id="3DJwHwHvgZc49rvpPNZVdK"></div>
 
-  <div class="log-panel" data-page-node-id="w4IKc5CGDcvABbftjSG89j">
-    <div class="log-h" data-page-node-id="Y8Q1Dc4wC7u0bAD8OlDFDy">战 斗 日 志</div>
-    <div class="log-body" id="logBody" data-page-node-id="IzKspdrITxph63q8LbYlvI"></div>
-  </div>
 </div>
 
-<div id="preview" class="hidden" data-page-node-id="qCogdjRvM4eZIFrxwsvtZa"></div>
 <div id="overlay" class="overlay hidden" data-page-node-id="2pCwN61WwmW6XJjkQOw420"></div>
 
 <script src="js/cards.js"></script>

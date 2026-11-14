@@ -29,3 +29,39 @@
 - `clearSelection()` 在 autoEndScheduled 时保留提示，避免被后续重绘清掉
 - 顺带修复跨局异步污染：新增全局 `gameSeq` / `S.gen` 与 `S.aiTimer`；startNewGame 开头先 cancelAutoEnd + clearTimeout(aiTimer)，runAI(gen) 用 `alive()` 在每个 await 后校验局代号，避免重新开局后旧定时器串到新对局（曾导致回合数被提前推进）
 - 验收：8 组场景（正常不触发 / 花光自动结束 / 加费卡 / 选目标豁免 / 取消选目标 / 手动提前结束防重复 / Esc 取消 / 游戏结束）全部通过，零异常
+
+## 新增：站点图标 favicon
+- 手绘 `favicon.svg`（深绿圆角底 + 黄铜双环 + 直臂铁十字 + 中心黄铜点，与游戏内德国徽记风格一致），并用无头浏览器把 SVG 渲染成 128×128 的 `favicon.png` 作兜底，两文件均在根目录
+- index.html head 加入 `<link rel="icon" type="image/svg+xml">` + `<link rel="icon" type="image/png">`
+- 注意：HTML 会被外部预览工具重写（加 data-page-node-id、title 被用户改为「模拟器」），编辑前必须重新 Read
+
+## 重做：站点图标改现代扁平风（用户连否两版）
+- 用户否掉 ① 初版手绘黄铜双环直臂铁十字（"简陋"）② ImageGen 生成的金属浮雕徽章（繁复古典 + 右下"AI生成"水印）；明确要求「符合现代人审美，但保留一点经典的感觉」
+- 结论：这类几何图标优先手工矢量，可控、无水印、不耗积分，比 AI 生成更贴现代 UI 风格
+- 默认 `favicon.svg/png`：深蓝渐变圆角底（#1d3057→#080e1e + 青蓝光晕，呼应现代 UI 主题）+ 米色纸卡与黄铜金后卡叠层（旋转 -8°/+12°）+ 卡内深绿几何铁十字（中心米色菱形）+ 右上青蓝点 → 现代构图 + 经典纸牌/黄铜/铁十字
+- 备选 `favicon-alt.svg/png`：军绿底 + 黄铜金喇叭臂几何铁十字 + 细金环（经典味更重）；用户若想换只需对调两对文件的 href
+- PNG 为 256×256 RGBA：Edge headless `--default-background-color=00000000` + 临时 _render.html 满屏 img 渲染 SVG 后截图导出，圆角处透明
+- head 补充 `sizes="256x256"`、`apple-touch-icon`、`theme-color #101a33`；删除两张带水印的 AI 中间图（约 3.9MB）
+- 验证：图标资源均 HTTP 200，64/48/32/16px 小尺寸下两版图形均可辨
+
+## 新增：站点图标随经典 / 现代主题自动切换
+- `THEME_ICONS` 映射：classic → `favicon-alt.svg/png`（军绿勋章）+ theme-color `#15261e`；modern → `favicon.svg/png`（深蓝卡牌）+ `#101a33`
+- `syncThemeIcon(t)` 挂在 `applyTheme()` 末尾，因此切换按钮、localStorage 刷新恢复两条路径都会自动同步；会移除并重建 3 个 link（svg icon / png icon / apple-touch-icon）确保浏览器刷新标签图标，href 已一致时跳过重建避免首屏闪烁
+- `index.html` 静态声明改为 classic（默认主题），避免加载瞬间先闪现代图标；meta theme-color 初值同步改为 `#15261e`
+- 验收：CDP 真实点击 11 项断言全通过（默认经典 / 切现代 / 刷新恢复 / 第二处按钮切回 / link 数量恒为 3 / 按钮文字同步 / 四个资源 200），零运行时异常
+
+## 改造：右侧固定信息栏 + 无可用行动自动结束回合
+- 布局：`.arena` 三列（HQ / lanes / `.side-panel`），侧栏 208px 内分上下两块：上 `.log-block`「对局记录」(44%)、下 `.inspect-block`「卡牌预览」(56%)，各带标题＋可滚动 body；预览卡 134px 宽、底部脚注显示兵种/部署费/行动费/是否可打出
+- 删除原跟随鼠标的 `#preview` 浮层（HTML 元素、CSS、positionPreview 与 mousemove 监听全部移除）；改为 `S.inspect={id,uid}` + `setInspect/renderInspect/applyInspectSelection`：hover 更新、`render()` 中选中项优先覆盖、鼠标移出回落到选中卡（无选中则 sticky 保留）、单位阵亡自动清空；hover 处理排除 `#inspectBody` 防重建循环
+- 自动结束由「kredit=0」扩展为「无可用行动」：新增 `canPlayAnyCard`（费用够 + 单位卡需有空位）、`hasPlayerAction`（可出牌 or 场上单位 canMove/canAttack）、`checkAutoEnd`；`afterKreditSpent` 与 `startTurn('player')` 两处调用，定时器守卫由 `kredit>0` 改为 `hasPlayerAction()`；文案区分「指挥点耗尽」/「无牌可出」
+- 矮屏修复：1280×720 下原预览卡 112×165 溢出 168px 容器，改为 `log-block 38% / inspect-block 62%` + padding 4px + `--cw:104px`（153px 高 / 194px 容器）；窄屏 168px 栏，`<900px` 隐藏侧栏
+- 验收：26 项断言（布局/预览交互/双主题/8 组自动结束边界）+ 11 项（矮屏/多回合回归）全通过，零运行时异常；多回合回归 5 回合 HP 20→9，新逻辑未卡死对局
+
+## 适配：手机竖屏 / 小屏设备
+- 根因：`@media (max-width:900px)` 里 `.side-panel{display:none}` 直接隐藏右侧栏；`#gameScreen{overflow:hidden}` 导致既看不到也划不动
+- 方案：`@media (max-width:900px)` 整页重排——`#gameScreen{overflow-y:auto}`、`.top-bar` sticky 吸顶、`.bottom-zone` sticky 吸底、`.arena{flex:1 0 auto;flex-direction:column}`（必须 grow 不 shrink：`1 1 auto` 会在内容超高时压缩战场、盖住侧栏并让页面失去滚动）
+- 侧栏从右侧列改为战线下方一行左右并排（日志 50% / 预览 50%，高 196px、预览卡 86px）；HQ 横排、战线槽位 flex 平分、手牌横向可滑、结束回合按钮 fixed 到指挥点行右侧（bottom:132px）完全不压手牌
+- `@media (orientation: landscape) and (max-height:520px)` 小屏横屏兜底（侧栏 160px、卡 64px、按钮 bottom:112px）
+- 断点必须是 `max-width:900px` 不限 orientation：只写 portrait 时，删掉 display:none 后 800×600 窄窗口三列挤不下（槽位溢出 lanes、预览卡裁切）
+- 手牌卡裁切修正：竖屏 hand-zone 128px + 卡 82px（120px 高）；横屏 110px + 70px
+- 验收：CDP 模拟 390×844 / 360×740 / 768×1024 / 844×390 共 70 项断言全过（含真实坐标点击 悬停预览→点手牌→点槽位部署→结束回合、双主题、滚到底侧栏不被 footer 遮挡），零异常；800×600 / 1024×768 / 1440×900 桌面无回归
