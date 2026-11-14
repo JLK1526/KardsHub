@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="33hrSSvPcTyuLgadVmJdSV"><head data-page-node-id="NFaCuJGEEHM9iFp2l5C68U">
+<meta charset="UTF-8" data-page-node-id="QQlOGMSCc9v2XWOjjewk58">
+<meta name="viewport" content="width=device-width,initial-scale=1" data-page-node-id="Gly2gRJmJRYaKshACEwOph">
+<title>KARDS · 二战卡牌 模拟器</title>
+<link rel="stylesheet" href="css/style.css" data-page-node-id="6LqBYTa0DFDoWs7KrOjwK5">
+<style id="__dm_no_drag_style__">* { -webkit-user-drag: none !important; }</style><style id="__dm_bindable_badge_style__">[data-sp-bindable="database"]{outline:1px dashed #0088ff;outline-offset:2px;border-radius:4px;}[data-sp-bindable="database"] *{pointer-events:none !important;transition:none !important;animation:none !important;}[data-sp-bindable="database"]{transition:none !important;animation:none !important;}</style></head>
+<body data-page-node-id="i65iapulJToTh1F7KPYCkp" style="">
+
+<!-- ==================== 开始界面 ==================== -->
+<div id="startScreen" class="screen" data-page-node-id="YrlUBL3opSyQx5Xn3uSCvU">
+  <div class="start-bg" data-page-node-id="zLh8TocptOTfZtoCGvFAKH"></div>
+  <button class="theme-toggle start-toggle" data-theme-toggle title="切换界面风格">✦ 现代 UI</button>
+  <div class="start-inner" data-page-node-id="eEL4ATneQDcD40q3jMwiQW">
+
+    <div class="brand" data-page-node-id="chgGlkSDMpx9YLeS48wve6">
+      <div class="eagle" data-page-node-id="OryjnqxzPfoz68OLZjb6Ed">1939 · WORLD WAR II CARD GAME</div>
+      <h1 data-page-node-id="YI1GEU5YkrbBwvl7dBCPta">KAR<em data-page-node-id="SJIKJHN0AXtNYDCY1CdnaK">DS</em></h1>
+      <div class="sub" data-page-node-id="obFDAdO5TQQJx5GucC2gEc" style="">二 战 卡 牌 ​</div>
+      <div class="tag" data-page-node-id="s0edMJt1NlV3YfQk5lJhW9">德国 · 美国 · 英国　｜　争夺前线，击毁敌方总部</div>
+    </div>
+
+    <div class="start-grid" data-page-node-id="J06ArACiRndS4bdztPvyAb">
+
+      <!-- 左：游戏规则 -->
+      <section class="panel" data-page-node-id="4a9NYBljWH3fduDEGKAmOu">
+        <h2 class="panel-title" data-page-node-id="PQHulfpdJ6Vvf67qKiJ5cY"><span class="idx" data-page-node-id="cHoQhAZtHgCf5rP4YnQd00">01</span> 战 场 规 则</h2>
+        <ul class="rule-list" data-page-node-id="4oU35bwKgxXjHcWFHJSH9U">
+          <li data-page-node-id="LEj6eBHpHGsYAkocKyOPGd"><span class="num" data-page-node-id="7cHMRxbwSkhlqdRDO7jubj">1</span><div data-page-node-id="FXbHiRVZhn4T6cEgw6Cdol"><b data-page-node-id="zMNaxDLqtBcJFoWgPAqSzd">胜利条件</b>　双方总部各 <span class="hl" data-page-node-id="eQ4Ba26zpbot1cBhbcBBX3">20</span> 点防御。先把敌方总部打至 0 点即可获胜；己方总部归零则战败。</div></li>
+          <li data-page-node-id="PJ7M8f5Eq0FvBugMWHXZCz"><span class="num" data-page-node-id="b3dt6EdyFq5sRODoX0L3rC">2</span><div data-page-node-id="M2mDAv4Sxsf4XTulCdL41P"><b data-page-node-id="rhHk5BGmGwr9i6adKQQEGW">指挥点</b>　每回合开始补满，且指挥点槽 <span class="hl" data-page-node-id="me8vAHKNaBAz6JppRZUwW1">每回合 +1</span>（上限 12）。回合结束时未用完的点数不会保留。卡牌左上角<span class="hl" data-page-node-id="rDDIEFj4i1zd4ScwnvgpCL">大数字</span>为部署费用，<span class="hl" data-page-node-id="AZkhaoMTelOU4komUJM1nt">小数字</span>为移动 / 攻击的行动费用。</div></li>
+          <li data-page-node-id="fZozP5LjsWI1VJhVxCDsys"><span class="num" data-page-node-id="OblXAmViaBCwSvgeC0zxWD">3</span><div data-page-node-id="UxEx8k3sX0OTK1xwZx7rBD"><b data-page-node-id="kYOTG4Jr3ju64nhnQFIy6U">三条战线</b>　自上而下为「敌方支援线 → <span class="hl" data-page-node-id="APmHFbgwnhhgV3ZXxecZaF">前线</span> → 己方支援线」。支援线各 4 格，前线 5 格；<b data-page-node-id="i4kpapvkdEfISO9WCpP7TK">同一时间只有一方能控制前线</b>。</div></li>
+          <li data-page-node-id="srPt4z8CWq9Q2CKuyuhojG"><span class="num" data-page-node-id="FmgnLtOwySjTCyR3SACccX">4</span><div data-page-node-id="1MF5Wzr9rUbYGH0iPgTq9p"><b data-page-node-id="teR0QouNQR8XaXstiEZHOT">部署</b>　点击手牌再点击己方支援线空位即可部署；标注「空降」的单位可直接部署到前线。</div></li>
+          <li data-page-node-id="dJvSrI4QvUFzDLD7K7Rhfw"><span class="num" data-page-node-id="aAwPTPKobHV26BLrcqcZG9">5</span><div data-page-node-id="qQyi8XlPH0amLxpYlyaFzq"><b data-page-node-id="8QtDjsXsCMx5M7ccdLKcYI">行动</b>　单位每回合可移动一次、攻击一次，各消耗一次行动费。刚部署的单位需等下回合才能行动，除非拥有「<span class="hl" data-page-node-id="4N0Gw94HNib6Ut3OZyExhH">闪击</span>」。</div></li>
+          <li data-page-node-id="Uezk7BmTsSSpfMtaF8XlHr"><span class="num" data-page-node-id="9FKGx1wMWsGFK0CQe9JdYv">6</span><div data-page-node-id="pKhAE6r0l4JLO9Mgz7xv0l"><b data-page-node-id="Va4533OPB2LAa8yE0aDvEy">进攻路线</b>　支援线单位可攻击敌方前线单位；<b data-page-node-id="fb6k90DxKQeA9I3RJnUvJU">清除敌方前线后推进到前线</b>，即可攻击敌方总部与敌方支援线单位。「守护」单位必须被优先攻击。</div></li>
+          <li data-page-node-id="3ADzlGriK5qUIkHBaU2SRb"><span class="num" data-page-node-id="xqIQhuV3gA8GnxnbpAG40t">7</span><div data-page-node-id="mpb1oZusAtJFXOq3wOZmbC"><b data-page-node-id="brfzdrSMrFEgk0T2qzPOCS">交战</b>　攻击时双方同时互相造成等同于自身攻击力的伤害，防御降至 0 即阵亡。支援线上的飞机只有<span class="hl" data-page-node-id="xpenlPsTS8ZUlKyd4nfHI1">空军 / 防空单位</span>能攻击（前线飞机不受此限）；地面单位无法对空反击，总部不会反击。</div></li>
+          <li data-page-node-id="9eflfxv2xDR6EEkCqBUcYs"><span class="num" data-page-node-id="wSDBG4XONSwqfAipr84eCO">8</span><div data-page-node-id="tDCrh45ALvngig1uLCxJt1"><b data-page-node-id="OoWG9hyNIHwDITiI914CBN">补给</b>　每回合开始抽 1 张牌，手牌上限 9 张；牌库抽空后继续抽牌将受到逐次递增的<span class="hl" data-page-node-id="Rdh0APwNyZktoCgmqbYm4u">疲劳伤害</span>。</div></li>
+        </ul>
+        <div class="rule-foot" data-page-node-id="uTCTBywxlHLgsYr9e54TCh">
+          操作：点击手牌 → 点击空位部署；点击己方单位 → 选择「推进 / 攻击」→ 点击目标。右侧「结束回合」交给对手行动。<br data-page-node-id="BbWBVK2P6HDl5RoHCyNIRJ">
+          阵营特色：德国＝装甲与闪电战　·　美国＝工业与空降　·　英国＝防守与皇家空军
+        </div>
+      </section>
+
+      <!-- 右：难度 + 国家 -->
+      <section class="panel" data-page-node-id="BgYforeb7GT8AeOcXy1HcT">
+        <h2 class="panel-title" data-page-node-id="1URghqr0AHx11NuogAJtCf"><span class="idx" data-page-node-id="m29Je79vCOEEv8gzunc2Rc">02</span> 出 征 准 备</h2>
+
+        <p class="section-label" data-page-node-id="F564S1swJl47v4zznY5oge">选择难度</p>
+        <div class="diff-row" id="diffRow" data-page-node-id="ZzDKGTAFZgs0e0dEEn29lK">
+          <button class="diff" data-diff="easy" data-page-node-id="MnKOOjW1Lmp6ULdrnStQGx">
+            <div class="dn" data-page-node-id="U3IfO8EG5ZDtKTDEUfg31x">低</div><div class="dd" data-page-node-id="OJk2WDkD7HDs1xeeVPFqmL">新兵演习<br data-page-node-id="C25gmM5mmdNzEdR1O7PbEt">AI 总部 16 点</div><div class="stars" data-page-node-id="AXNEXDukk8jbLsnksCZcft">★☆☆</div>
+          </button>
+          <button class="diff on" data-diff="normal" data-page-node-id="rmId8eVchx1BpIItKXfjGr">
+            <div class="dn" data-page-node-id="DJAy8rN2okCP2zypFYC8SF">中</div><div class="dd" data-page-node-id="5CcLiTapIvSL1YdrpzLGSA">标准对局<br data-page-node-id="mtYJFhuq7VXQH8Sm3buynq">AI 总部 20 点</div><div class="stars" data-page-node-id="LftkWCHgN4KYMqEw2mO6ro">★★☆</div>
+          </button>
+          <button class="diff" data-diff="hard" data-page-node-id="0ZoVyzCL1Wmh2KWFA3FJqc">
+            <div class="dn" data-page-node-id="sm9LSeit24bKnSFR0bwVEb">高</div><div class="dd" data-page-node-id="va4oYBeKRQQgRi9tXAmj6v">名将挑战<br data-page-node-id="zrHQVJ8u8SJK29W0GmW6vQ">AI 总部 25 点</div><div class="stars" data-page-node-id="nTifQfbQFfnvxgJjSn3jw2">★★★</div>
+          </button>
+        </div>
+
+        <p class="section-label" data-page-node-id="pS5RiVNgDhZVfMKfL81Z0D">选择阵营</p>
+        <div class="nation-row" id="nationRow" data-page-node-id="EG5oqneW0VLhrZiGsUSc6q">
+          <button class="nation ger on" data-nation="ger" data-page-node-id="0R8rJ7ckbRh36jgWCDnmvK">
+            <span class="check" data-page-node-id="xGeioWCXwCPMHhKSoST4y5">✓</span><span class="band" data-page-node-id="bCJtEK71xDmpFS5uIDz8Fq"></span>
+            <span class="badge" data-badge="ger" data-page-node-id="9RQlPnVaqfzqsY8QQUr46k"><svg width="36" height="36" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="24" height="24" rx="3" fill="#252a26"></rect>
+          <path d="M13,7 h6 v6 h6 v6 h-6 v6 h-6 v-6 h-6 v-6 h6 z" fill="#e9e6d8"></path>
+          <path d="M14.5,8.5 h3 v6 h6 v3 h-6 v6 h-3 v-6 h-6 v-3 h6 z" fill="#1c1f1c"></path></svg></span>
+            <div class="nn" data-page-node-id="jP9acFoUtpnppa9YNnZP3F">德国</div><div class="ne" data-page-node-id="EBihuhpNoHiWDLZ2pTRebo">GERMANY</div>
+            <div class="nm" data-page-node-id="gMBle6l0yUmeliHbR1GSg2">装甲集群 · 闪电战<br data-page-node-id="U3q1CIq5hHj9nlxySUcsvJ">高攻重装</div>
+          </button>
+          <button class="nation usa" data-nation="usa" data-page-node-id="JJGiBrre4JXq1AmKRjoy2A">
+            <span class="check" data-page-node-id="ciNwELGBbA6JdgaLV6wNhQ">✓</span><span class="band" data-page-node-id="6aGPBeFG2VjkqUtZreHAit"></span>
+            <span class="badge" data-badge="usa" data-page-node-id="nkIWyXQBkreEWgm1d7Kuh3"><svg width="36" height="36" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="24" height="24" rx="3" fill="#3d4a2e"></rect>
+          <circle cx="16" cy="16" r="11" fill="#2f3b26" stroke="#ded7b6" stroke-width="1"></circle>
+          <path d="M16,7 l2.6,5.6 6.1,.7 -4.5,4.1 1.2,6 -5.4,-3 -5.4,3 1.2,-6 -4.5,-4.1 6.1,-7 z" fill="#f2eee0"></path></svg></span>
+            <div class="nn" data-page-node-id="fCDEAg1hqw0Vm7UhzhrtYU">美国</div><div class="ne" data-page-node-id="OOcAD6gQ66zETwulUV1ZkX">UNITED STATES</div>
+            <div class="nm" data-page-node-id="wA4HHYpuHKDjel9CM1bCzH">工业产能 · 空降<br data-page-node-id="awqzOvBF8brTxW6dKtUDr5">资源充裕</div>
+          </button>
+          <button class="nation uk" data-nation="uk" data-page-node-id="dMrNtsF1tGeYMq2eFBcEle">
+            <span class="check" data-page-node-id="hKptSjw0vyL6tNxy0lzolN">✓</span><span class="band" data-page-node-id="QPwvcqXZAU35f4Fr3yWMh5"></span>
+            <span class="badge" data-badge="uk" data-page-node-id="dOIisi0YpTJgVuEGxPPYcp"><svg width="36" height="36" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="24" height="24" rx="3" fill="#283b5c"></rect>
+          <path d="M4,4 L28,28 M28,4 L4,28" stroke="#f0ece0" stroke-width="6"></path>
+          <path d="M4,4 L28,28 M28,4 L4,28" stroke="#bd4136" stroke-width="2.4"></path>
+          <path d="M16,4 V28 M4,16 H28" stroke="#f0ece0" stroke-width="7"></path>
+          <path d="M16,4 V28 M4,16 H28" stroke="#bd4136" stroke-width="3.6"></path></svg></span>
+            <div class="nn" data-page-node-id="6yJba1rWehpVs3lYBXezVr">英国</div><div class="ne" data-page-node-id="DBsrBdD17PqWRmwVTxVicB">UNITED KINGDOM</div>
+            <div class="nm" data-page-node-id="hJZ2Sfm6Lv8VgCYkR0oqFY">坚壁防守 · 空军<br data-page-node-id="YrwhLnCDikDdJrqCqhY2OR">高防守护</div>
+          </button>
+        </div>
+
+        <p class="enemy-note" data-page-node-id="hmmQwzdHeZoFR3k5ltmI1z">对手将从其余两个阵营中随机选取。当前版本仅收录 <b data-page-node-id="TFeILkODas29LNpy6ExqT6">德国 / 美国 / 英国</b> 三套卡组。</p>
+
+        <button class="start-btn" id="startBtn" data-page-node-id="ofim6JDiBuYu6Qxu0ZgEdV">开 始 战 斗</button>
+        
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 游戏界面 ==================== -->
+<div id="gameScreen" class="screen hidden" data-page-node-id="ce7MEYD2o3skqLVZMuBMQB">
+  <!-- 顶部：对手信息 -->
+  <div class="top-bar" data-page-node-id="MnOxXiDbKJO8ONPvq0LynU">
+    <div class="brand-mini" data-page-node-id="gdwMxPyAljSfC0atgnz75r">KAR<em data-page-node-id="IhzoBwf9bGIRvecQ2CZ3q2">DS</em></div>
+    <button class="theme-toggle" data-theme-toggle title="切换界面风格">✦ 现代 UI</button>
+    <div class="top-sep" data-page-node-id="fny0dBnXuxWT6eSkj38rYg"></div>
+    <div class="foe-info" data-page-node-id="BU9peIurzp1UY5Guz7yGPj">
+      <div class="foe-avatar" id="foeAvatar" data-page-node-id="xxqVWDoHotDDw5ryADjZ7S"></div>
+      <div class="foe-txt" data-page-node-id="ufEe40kJfSnsMATzd5COrP">
+        <div class="l1" id="foeName" data-page-node-id="qCtISzJAyr59Sg9kHeOV1H">敌方指挥官</div>
+        <div class="l2" id="foeSub" data-page-node-id="2ldRmQQBXNCnQeyTsqDa9W">GERMANY · 难度：中</div>
+      </div>
+    </div>
+    <div class="hud-chip" data-page-node-id="JboPglWbQSZ4f4xaDrf2sd"><span class="ic" data-page-node-id="AAfTGcb3yzkcM05nTKA9am">✋</span> 手牌 <b id="foeHand" data-page-node-id="LttwqniQW5bAiUZWZJ8iMP">0</b></div>
+    <div class="hud-chip" data-page-node-id="OI4kdSQEJkRL2UC3sFLjDr"><span class="ic" data-page-node-id="ZB4MqdGpzzRBX8Ayc4uqBg">▤</span> 牌库 <b id="foeDeck" data-page-node-id="xeWyelOqRUSqPYM2t35TKL">0</b></div>
+    <div class="hud-chip" data-page-node-id="sfjj4yW4j5NlSwpgjQoXtC"><span class="ic" data-page-node-id="CbcW9zthehz0dZlZMvBKcF">✦</span> 指挥点 <b id="foeKredit" data-page-node-id="tAWnU5jqN9FOUUtNphvEZA">0</b></div>
+    <div class="top-spacer" data-page-node-id="KXucS8dM6sYWqS7N8Pkmjw"></div>
+    <div class="turn-banner" id="turnBanner" data-page-node-id="QuhO3RugIY8HpuAEBbmYQR">回合 1</div>
+    <div class="hud-chip" id="diffChip" data-page-node-id="R33tIV2lNihALJpq3mFs1i">难度：中</div>
+    <button class="icon-btn" id="restartBtn" title="重新开局" data-page-node-id="woXv9alfEQ1odQtQvOw6tM">↻</button>
+    <button class="icon-btn" id="menuBtn" title="返回主菜单" data-page-node-id="JmomOOL3WDa43peDe6qPm5">⌂</button>
+  </div>
+
+  <!-- 战场 -->
+  <div class="arena" data-page-node-id="6d8owJlQ8jKGDUMWwKaAwV">
+    <div class="arena-side" data-page-node-id="KmJYedkFa9pBLxPI83Hek0">
+      <div class="hq hq-foe" id="foeHQ" data-page-node-id="1QJ8kGZVu8j4wA90gZ7PCX">
+        <div class="hq-badge" id="foeHqBadge" data-page-node-id="0Ufa8MBReN6x0ifRXI6pLV"></div>
+        <div class="hq-name" data-page-node-id="gAYF2QZwi6yEi30KkGGYWj">敌方总部</div>
+        <div class="hq-hp" id="foeHp" data-page-node-id="mv0KNDLXpGstDlSZ3GdhUT"><span class="heart" data-page-node-id="du2cL5MJy58rDykQrwOKzp">♥</span>20</div>
+      </div>
+      <div class="front-indicator" data-page-node-id="ewV9vbrZhpiZAx124teLoZ">
+        <div class="fi-t" data-page-node-id="3Yyq6iREKZdOYZrCWlJnpw">FRONT LINE</div>
+        <div class="fi-v" id="frontOwner" data-page-node-id="rxXZ4sb9YvW4SHFLqdyz6H">前线：无人控制</div>
+      </div>
+      <div class="hq" id="playerHQ" data-page-node-id="DbTaP7nMiCCxqn10NXz545">
+        <div class="hq-badge" id="playerHqBadge" data-page-node-id="3MZ44a4Y2ygyoZOgb9mKBW"></div>
+        <div class="hq-name" data-page-node-id="mU6S1usPgxTA5cBxObLarn">我方总部</div>
+        <div class="hq-hp" id="playerHp" data-page-node-id="DkW1fjtWe6xwZASU1SuGa4"><span class="heart" data-page-node-id="F4SqiKmppkA4oEkFvBTDK5">♥</span>20</div>
+      </div>
+    </div>
+
+    <div class="lanes" data-page-node-id="MAs1LxyZOWSnH2RsJeAEJO">
+      <div class="lane foe-lane" data-page-node-id="USTySLeyfO7j3VD4rkKWZc">
+        <div class="lane-tag" data-page-node-id="nGQMItcAkrrAa85T1HOuhT"><b data-page-node-id="WLcTMGgC0MnAjYP87gXWH2">敌方</b>支援线</div>
+        <div class="slots" id="foeSlots" data-page-node-id="NUCb1zO0oBUB5dXJuSIhB4"></div>
+      </div>
+      <div class="lane front-lane" data-page-node-id="EKBRdAbqJ74HW2l58nqcG5">
+        <div class="lane-tag" data-page-node-id="uSzCKuTaRHtBwnEBhz9lSg"><b data-page-node-id="DJi8HfIR64hFAl9UucVbP2">前线</b>争夺区</div>
+        <div class="slots" id="frontSlots" data-page-node-id="4SXWAHetPjCE6zMM7FBA1C"></div>
+      </div>
+      <div class="lane player-lane" data-page-node-id="BfptDOC6kJTYcUiX3VyWr6">
+        <div class="lane-tag" data-page-node-id="msBiDINHCTWz60YvqT4upS"><b data-page-node-id="P2RSsYGelONwy3XdCggbLf">我方</b>支援线</div>
+        <div class="slots" id="playerSlots" data-page-node-id="1ep3xoD2F4BjAYW9MC6IDM"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部 -->
+  <div class="bottom-zone" data-page-node-id="YXD3Ga9aARgdxDgHNdRqL4">
+    <div class="player-bar" data-page-node-id="WFgyySVP6okx1EvO3rPBAI">
+      <div class="kredit-box" data-page-node-id="ivwCFL44EDLztC0Y489QUn">
+        <span class="klabel" data-page-node-id="Pb7mxhs1lRw96pX1oCHISB">指挥点</span>
+        <span class="kredit-num" id="kreditNum" data-page-node-id="RxmnuTlfmC7GbKDogVFvAy">1 <small data-page-node-id="tnrSmWzF1j0CyoLiKZfUHv">/ 1</small></span>
+        <div class="kredit-pips" id="kreditPips" data-page-node-id="RTTifrjyMbMHC1rc4F3lku"></div>
+      </div>
+      <div class="top-sep" data-page-node-id="dPFpbB1LPlSMZCdUKO9gPl"></div>
+      <div class="player-name" id="playerName" data-page-node-id="kPWS4spgBV8EDNT6i0yFiZ"></div>
+      <div class="top-spacer" data-page-node-id="mmQ3MnvwfmIGum5Ljsll2y"></div>
+      <div class="hud-chip" data-page-node-id="ezWfNDrT9VG956iw6wTKWC"><span class="ic" data-page-node-id="dfmIVgiPZEd1xPU3OiXdwi">✋</span> 手牌 <b id="playerHand" data-page-node-id="szAZpDUpAxjRmxVHYBDQg0">0</b></div>
+      <div class="pile-label" data-page-node-id="GJTI0ciFFUUsMNbwwcslAd">牌库<br data-page-node-id="v9tWHJMY50oBzVxTRuw1p6"><b id="playerDeck" data-page-node-id="Jk7M9tEJLrBjmQr6cgv7Wo">30</b></div>
+      <div class="deck-pile" id="deckPile" data-page-node-id="OvTMEMIe9HypYQqZQK4ZRD">✦</div>
+    </div>
+    <div class="hand-zone" data-page-node-id="dXxYIBjklCWuL0rElURPhh"><div class="hand-cards" id="handCards" data-page-node-id="3BAyAq4hGHuAr8liyJcSIu"></div></div>
+  </div>
+
+  <button class="end-turn" id="endTurnBtn" data-page-node-id="G5lzklTLjLXvTuFZun1nES">结束回合<small id="endTurnSub" data-page-node-id="2jGoGXJRAq9aHGWf0bGsX5">END TURN</small></button>
+  <div class="hint hidden" id="hint" data-page-node-id="3DJwHwHvgZc49rvpPNZVdK"></div>
+
+  <div class="log-panel" data-page-node-id="w4IKc5CGDcvABbftjSG89j">
+    <div class="log-h" data-page-node-id="Y8Q1Dc4wC7u0bAD8OlDFDy">战 斗 日 志</div>
+    <div class="log-body" id="logBody" data-page-node-id="IzKspdrITxph63q8LbYlvI"></div>
+  </div>
+</div>
+
+<div id="preview" class="hidden" data-page-node-id="qCogdjRvM4eZIFrxwsvtZa"></div>
+<div id="overlay" class="overlay hidden" data-page-node-id="2pCwN61WwmW6XJjkQOw420"></div>
+
+<script src="js/cards.js"></script>
+<script src="js/art.js"></script>
+<script src="js/game.js"></script>
+
+
+</body></html>
