@@ -914,11 +914,35 @@ function bindGameEvents() {
 }
 
 /* ---------------- 主题切换（经典 / 现代） ---------------- */
+// 标签页图标 + 浏览器主题色随 UI 主题同步：经典=军绿勋章，现代=深蓝卡牌
+const THEME_ICONS = {
+  classic: { svg: 'favicon-alt.svg', png: 'favicon-alt.png', color: '#15261e' },
+  modern:  { svg: 'favicon.svg',     png: 'favicon.png',     color: '#101a33' }
+};
+function syncThemeIcon(t) {
+  const ico = THEME_ICONS[t] || THEME_ICONS.classic;
+  const meta = $('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', ico.color);
+  const links = $$('link[rel="icon"], link[rel="apple-touch-icon"]');
+  const svgLink = links.find(l => l.getAttribute('type') === 'image/svg+xml');
+  // 已一致时不重建，避免首屏无谓地移除再插入
+  if (svgLink && svgLink.getAttribute('href') === ico.svg && links.length === 3) return;
+  links.forEach(l => l.remove());
+  const add = attrs => {
+    const l = document.createElement('link');
+    Object.keys(attrs).forEach(k => l.setAttribute(k, attrs[k]));
+    document.head.appendChild(l);
+  };
+  add({ rel: 'icon', type: 'image/svg+xml', href: ico.svg });
+  add({ rel: 'icon', type: 'image/png', sizes: '256x256', href: ico.png });
+  add({ rel: 'apple-touch-icon', href: ico.png });
+}
 function applyTheme(t) {
   document.body.classList.toggle('theme-modern', t === 'modern');
   const label = t === 'modern' ? '▤ 经典 UI' : '✦ 现代 UI';
   $$('[data-theme-toggle]').forEach(b => { b.textContent = label; });
   try { localStorage.setItem('kards-theme', t); } catch (e) {}
+  syncThemeIcon(t);
 }
 function initTheme() {
   let saved = 'classic';

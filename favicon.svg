@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d3057"/>
+      <stop offset=".58" stop-color="#101a33"/>
+      <stop offset="1" stop-color="#080e1e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="78%" cy="10%" r="82%">
+      <stop offset="0" stop-color="#5b8dff" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#5b8dff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8eed8"/>
+      <stop offset="1" stop-color="#d9c8a2"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9cd88"/>
+      <stop offset="1" stop-color="#a77a37"/>
+    </linearGradient>
+    <clipPath id="round"><rect width="64" height="64" rx="15"/></clipPath>
+    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="1.6" stdDeviation="1.6" flood-color="#000000" flood-opacity=".45"/>
+    </filter>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="64" height="64" fill="url(#bg)"/>
+    <rect width="64" height="64" fill="url(#glow)"/>
+    <g transform="rotate(12 32 32)" filter="url(#shadow)">
+      <rect x="20" y="10" width="27" height="43" rx="3.6" fill="url(#brass)"/>
+    </g>
+    <g transform="rotate(-8 32 32)" filter="url(#shadow)">
+      <rect x="16" y="11" width="29" height="43" rx="3.6" fill="url(#paper)"/>
+      <rect x="16.4" y="11.4" width="28.2" height="42.2" rx="3.3" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width=".7"/>
+      <rect x="20" y="15.6" width="21" height="2" rx="1" fill="#ac8640" opacity=".85"/>
+      <g transform="translate(30.5 31) scale(.46) translate(-32 -32)" fill="#1d3428">
+        <path d="M24 8 H40 L37 27 H27 Z"/>
+        <path d="M24 56 H40 L37 37 H27 Z"/>
+        <path d="M8 24 V40 L27 37 V27 Z"/>
+        <path d="M56 24 V40 L37 37 V27 Z"/>
+        <rect x="26.6" y="26.6" width="10.8" height="10.8"/>
+      </g>
+      <path d="M30.5 28.7 L32.8 31 L30.5 33.3 L28.2 31 Z" fill="#f2e6cb" opacity=".95"/>
+      <rect x="21" y="45.8" width="19" height="1.2" rx=".6" fill="#8b7850" opacity=".55"/>
+      <rect x="21" y="49" width="12.5" height="1.2" rx=".6" fill="#8b7850" opacity=".4"/>
+    </g>
+    <circle cx="51.5" cy="12.5" r="2.4" fill="#7fa8ff" opacity=".92"/>
+  </g>
+</svg>
