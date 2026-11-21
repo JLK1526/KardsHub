@@ -24,9 +24,21 @@ const newUid = () => 'u' + (uidSeq++);
 /* ---------------- 启动页 ---------------- */
 let chosenDiff = 'normal';
 let chosenNation = 'ger';
+// 隐藏阵营（国民党）只能由彩蛋启用，且仅对当前这一局生效。
+// 用它而不直接改 chosenNation，避免污染开始页的选择状态；用完立即清空。
+let secretNationOnce = null;
+const SECRET_NATION = 'ktm';
+
+// 强制让开始页高亮与 chosenNation 一致。任何路径回到主界面都调用一次，
+// 避免「界面选的是 A、内部却记成 B」这种状态漂移；隐藏阵营若混入则回退到默认。
+function syncNationSelection() {
+  if (chosenNation === SECRET_NATION || !NATION_META[chosenNation]) chosenNation = 'ger';
+  $$('.nation').forEach(b => b.classList.toggle('on', b.dataset.nation === chosenNation));
+}
 
 function initStartScreen() {
   $$('[data-badge]').forEach(el => el.innerHTML = nationBadge(el.dataset.badge, 36));
+  syncNationSelection();
 
   $('#diffRow').addEventListener('click', e => {
     const b = e.target.closest('.diff'); if (!b) return;
@@ -35,33 +47,44 @@ function initStartScreen() {
   });
   $('#nationRow').addEventListener('click', e => {
     const b = e.target.closest('.nation'); if (!b) return;
-    $$('.nation').forEach(x => x.classList.remove('on'));
-    b.classList.add('on'); chosenNation = b.dataset.nation;
+    chosenNation = b.dataset.nation;
+    syncNationSelection();
   });
   $('#startBtn').addEventListener('click', startNewGame);
-  $('#restartBtn').addEventListener('click', () => { $('#overlay').classList.add('hidden'); startNewGame(); });
+  $('#restartBtn').addEventListener('click', () => { $('#overlay').classList.add('hidden'); restartSameGame(); });
   $('#menuBtn').addEventListener('click', () => {
     $('#overlay').classList.add('hidden');
     $('#gameScreen').classList.add('hidden');
     $('#startScreen').classList.remove('hidden');
+    syncNationSelection();
   });
 }
 
 /* ---------------- 建立对局 ---------------- */
+// 重开当前对局：沿用当前阵营。隐藏阵营是唯一需要显式续用的情况，
+// 避免彩蛋局点「再战一局」后悄悄变成开始页选中的国家。
+function restartSameGame() {
+  if (S && S.playerNation === SECRET_NATION) secretNationOnce = SECRET_NATION;
+  startNewGame();
+}
+
 function startNewGame() {
   // 清掉上一局尚未触发的定时器，避免旧回调作用到新对局
   cancelAutoEnd();
   if (S && S.aiTimer) { clearTimeout(S.aiTimer); S.aiTimer = null; }
   gameSeq++;
   const gen = gameSeq;
-  const others = Object.keys(NATION_META).filter(n => n !== chosenNation);
+  // 彩蛋阵营只影响这一局；隐藏阵营永远不进入常规对手随机池
+  const nation = secretNationOnce || chosenNation;
+  secretNationOnce = null;
+  const others = Object.keys(NATION_META).filter(n => n !== nation && n !== SECRET_NATION);
   const foeNation = others[Math.floor(Math.random() * others.length)];
   const d = DIFF[chosenDiff];
 
   S = {
     gen, aiTimer:null,
     diff: chosenDiff, cfg: d,
-    playerNation: chosenNation, foeNation,
+    playerNation: nation, foeNation,
     turn: 1, tick: 0, current: 'player', phase: 'idle', over: false,
     frontOwner: 'none',
     p: {
@@ -72,11 +95,11 @@ function startNewGame() {
     selectedHand: null, selectedUnit: null,
     inspect: null,           // 右侧预览区当前展示的 { id, uid }
     pending: null,           // 待选目标的指令 / 部署效果
-    targetMode: null,        // 'attack' | 'spell'
+    targetMode: null,        // 仅法术选目标使用：'spell'（单位攻击改为选中即高亮）
     autoEndScheduled: false, autoEndTimer: null,
     stats: { deployed:0, kills:0, dmg:0 }
   };
-  S.p.player.deck = buildDeck(chosenNation);
+  S.p.player.deck = buildDeck(nation);
   S.p.foe.deck    = buildDeck(foeNation);
   // 起手 4 张
   draw('player', 4, true); draw('foe', 4, true);
@@ -86,14 +109,16 @@ function startNewGame() {
   $('#overlay').classList.add('hidden');
   $('#logBody').innerHTML = '';
 
-  const pm = NATION_META[chosenNation], fm = NATION_META[foeNation];
+  const pm = NATION_META[nation], fm = NATION_META[foeNation];
   $('#foeAvatar').innerHTML = nationBadge(foeNation, 28);
-  $('#foeName').textContent = fm.name + ' 指挥官';
-  $('#foeSub').textContent = fm.en + ' · 难度：' + d.label;
+  // 顶部这一栏是对手信息，必须显式标出「敌方」，否则玩家会误以为是自己选的国家。
+  // 副标题同时给出我方国家，方便一眼对照，避免「选了 A 却显示 B」的错觉。
+  $('#foeName').textContent = '敌方 · ' + fm.name + ' 指挥官';
+  $('#foeSub').textContent = '我方 ' + pm.name + ' ｜ 敌方 ' + fm.name + ' · ' + d.label + '难度';
   $('#diffChip').textContent = '难度：' + d.label;
   $('#foeHqBadge').innerHTML = nationBadge(foeNation, 44);
-  $('#playerHqBadge').innerHTML = nationBadge(chosenNation, 44);
-  $('#playerName').innerHTML = nationBadge(chosenNation, 22) + pm.name + ' · 我方';
+  $('#playerHqBadge').innerHTML = nationBadge(nation, 44);
+  $('#playerName').innerHTML = nationBadge(nation, 22) + pm.name + ' · 我方';
   S.p.foe.slots += d.startSlots;
 
   log('=== 战斗开始 ===', 'sys');
@@ -123,6 +148,9 @@ function startTurn(side, first) {
   draw(side, 1 + (side === 'foe' ? S.cfg.extraDraw : 0));
   render();
   showHint(side === 'player' ? `第 ${S.turn} 回合 · 轮到你了` : '敌方回合', side === 'foe');
+  // 回合切换：无线电提示音 + 濒危检测（居中横幅已按要求移除）
+  SFX.play('radio');
+  FX.updateDanger();
   if (side === 'player') {
     $('#endTurnBtn').classList.remove('waiting');
     $('#endTurnSub').textContent = 'END TURN';
@@ -270,13 +298,15 @@ function legalTargets(side, attacker) {
   const found = findUnit(attacker.uid);
   if (!found) return [];
   const foe = other(side);
+  const longRange = isLongRange(cardOf(attacker));
   let list = [];
   // 敌方前线单位：任意位置都可攻击
   S.board.front.forEach(u => { if (u && u.owner === foe) list.push(u); });
-  // 位于前线时可攻击敌方支援线与敌方总部
-  if (found.row === 'front') {
+  // 位于前线，或本身就是远程单位（火炮 / 战斗机 / 轰炸机）时，
+  // 可从己方支援线直接攻击敌方支援线与敌方总部，无需先推进到前线
+  if (found.row === 'front' || longRange) {
     S.board[enemyRow(side)].forEach(u => { if (u) list.push(u); });
-    if (S.board.front.every(u => !u || u.owner === side)) list.push('hq');
+    if (longRange || S.board.front.every(u => !u || u.owner === side)) list.push('hq');
   }
   list = list.filter(t => t === 'hq' || canAttackAir(attacker, t));
   // 守护：有可达守护单位时必须优先攻击它们
@@ -313,6 +343,38 @@ function canAttack(u) {
     && legalTargets(u.owner, u).length > 0;
 }
 
+// 选中我方单位后可立即执行的行动目标：推进位 + 合法攻击目标。
+// 高亮渲染与点击判定共用此函数，确保「看到的高亮」与「能点的目标」完全一致。
+function actionTargets(uid) {
+  const out = { unit:null, move:false, attack:[] };
+  if (!uid || !S || S.over || S.current !== 'player' || S.phase === 'ai') return out;
+  const f = findUnit(uid);
+  if (!f || f.unit.owner !== 'player') return out;
+  out.unit = f.unit;
+  if (canMove(f.unit)) out.move = true;
+  if (canAttack(f.unit))
+    out.attack = legalTargets('player', f.unit).map(t => t === 'hq' ? 'hq' : t.uid);
+  return out;
+}
+
+// 点击己方单位：选中并高亮可推进 / 可攻击的目标，玩家直接点高亮处执行
+function selectUnit(uid) {
+  const f = findUnit(uid);
+  if (!f) return;
+  S.selectedUnit = uid; S.selectedHand = null;
+  S.targetMode = null; S.pending = null; S.phase = 'idle';
+  const t = actionTargets(uid);
+  if (!t.move && !t.attack.length) {
+    showHint(canAct(f.unit) ? '该单位本回合无可用行动' : '该单位刚部署，需等待下回合（闪击除外）', true);
+  } else {
+    const tips = [];
+    if (t.move) tips.push('点高亮的前线空位推进');
+    if (t.attack.length) tips.push('点高亮的敌方目标攻击');
+    showHint(tips.join('，或'), true);
+  }
+  render();
+}
+
 /* ---------------- 部署 / 效果 ---------------- */
 function playCard(side, handUid, row, index, autoTarget) {
   const p = S.p[side];
@@ -336,6 +398,15 @@ function playCard(side, handUid, row, index, autoTarget) {
     if (hasEffect(card,'blitz')) unit.bornTick = -1;
     S.board[row][index] = unit;
     if (side === 'player') S.stats.deployed++;
+  }
+  // 部署：落地冲击 + 军靴踏地音；指令卡：纸张翻动。AI 延迟播放避免与玩家操作叠音。
+  const delay = side === 'foe' ? 0.08 : 0;
+  if (isUnit(card)) {
+    SFX.play('deploy', delay);
+    render();                       // 先渲染出新单位，才能定位落地特效
+    FX.land(`[data-uid="${unit.uid}"]`);
+  } else {
+    SFX.play('draw', delay);
   }
   resolveEffects(side, card, unit, autoTarget);
   render();
@@ -397,11 +468,16 @@ function dealSpellDamage(target, n, source) {
   const u = f.unit;
   u.def -= n;
   log(`「${source}」对「${cardOf(u).name}」造成 ${n} 点伤害`, 'foe');
-  floatDamage(`[data-uid="${u.uid}"]`, '-' + n);
+  const sel = `[data-uid="${u.uid}"]`;
+  floatDamage(sel, '-' + n);
+  SFX.play('hit');
+  FX.impact(sel, n >= 4);
   if (u.def <= 0) {
     S.board[f.row][f.index] = null;
     log(`${sideName(u.owner)}「${cardOf(u).name}」被摧毁`, 'sys');
     if (u.owner === 'foe') S.stats.kills++;
+    SFX.play('explode', 0.03);
+    FX.destroy(sel);
   }
   checkGameOver();
 }
@@ -412,11 +488,15 @@ function moveUnit(uid) {
   const u = f.unit, c = cardOf(u);
   if (!canMove(u)) { showHint('无法推进：前线被占据 / 指挥点不足 / 本回合已移动', true); return; }
   S.p[u.owner].kredit -= c.op;
+  const fromEl = document.querySelector(`[data-uid="${u.uid}"]`);
   S.board[f.row][f.index] = null;
   S.board.front[freeIndex('front')] = u;
   u.moved = true;
   log(`${sideName(u.owner)}「${c.name}」推进至前线`, u.owner === 'player' ? 'me' : 'foe');
+  SFX.play('move');                   // 履带 / 行军声
   render();
+  FX.march(fromEl, `[data-uid="${u.uid}"]`);
+  FX.land(`[data-uid="${u.uid}"]`);
   afterKreditSpent(u.owner);
 }
 
@@ -433,6 +513,13 @@ function attack(uid, target) {
   const attackerEl = document.querySelector(`[data-uid="${a.uid}"]`);
   if (attackerEl) { attackerEl.classList.add('attacking'); setTimeout(() => attackerEl.classList.remove('attacking'), 360); }
 
+  // 攻击音效 + 拖尾：火炮/轰炸机用炮声与炮弹轨迹，其它用枪声
+  const heavy = ac.type === 'artillery' || ac.type === 'bomber';
+  SFX.play(heavy ? 'cannon' : 'gun');
+  const targetSel = target === 'hq' ? ('#' + (other(a.owner) === 'foe' ? 'foeHQ' : 'playerHQ'))
+                                   : `[data-uid="${target.uid}"]`;
+  FX.tracer(attackerEl, targetSel, heavy ? 'shell' : 'bullet');
+
   if (target === 'hq') {
     const victim = other(a.owner);
     S.p[victim].hp -= dmg;
@@ -441,11 +528,16 @@ function attack(uid, target) {
     floatDamage('#' + (victim === 'foe' ? 'foeHQ' : 'playerHQ'), '-' + dmg);
     const hq = $('#' + (victim === 'foe' ? 'foeHQ' : 'playerHQ'));
     hq.classList.add('hit'); setTimeout(() => hq.classList.remove('hit'), 450);
+    SFX.play('hqhit', 0.06);          // 总部中弹的沉重轰鸣
+    FX.hqHit(hq);
+    FX.updateDanger();
   } else {
     const d = target, dc = cardOf(d);
     d.def -= dmg;
     log(`${sideName(a.owner)}「${ac.name}」攻击「${dc.name}」，造成 ${dmg} 点伤害`, a.owner === 'player' ? 'me' : 'foe');
     floatDamage(`[data-uid="${d.uid}"]`, '-' + dmg);
+    SFX.play('hit', 0.05);            // 命中的金属撞击
+    FX.impact(targetSel);
     // 反击：地面单位无法反击空军（除非具备防空）
     const canRetaliate = !isAir(ac) || !isAir(dc) || hasEffect(dc,'antiAir') || hasEffect(dc,'bonusVsAir');
     if (canRetaliate) {
@@ -462,11 +554,15 @@ function attack(uid, target) {
       if (d.owner === 'foe') S.stats.kills++;
       const el = document.querySelector(`[data-uid="${d.uid}"]`);
       if (el) el.classList.add('flash-red');
+      SFX.play('explode', 0.04);      // 单位击毁的爆炸
+      FX.destroy(targetSel);
     }
     if (af && a.def <= 0) {
       S.board[af.row][af.index] = null;
       log(`${sideName(a.owner)}「${ac.name}」被摧毁`, 'sys');
       if (a.owner === 'foe') S.stats.kills++;
+      SFX.play('explode', 0.04);
+      FX.destroy(attackerEl);
     }
   }
   checkGameOver();
@@ -482,6 +578,8 @@ function checkGameOver() {
 function gameOver(win) {
   S.over = true; S.phase = 'over';
   clearSelection();
+  SFX.play(win ? 'victory' : 'defeat');  // 胜负演出音效
+  FX.finale(win);                        // 全屏胜利 / 战败演出
   log(win ? '=== 我方胜利 ===' : '=== 我方战败 ===', 'sys');
   const o = $('#overlay');
   o.innerHTML = `<div class="modal">
@@ -499,11 +597,12 @@ function gameOver(win) {
     </div>
   </div>`;
   o.classList.remove('hidden');
-  $('#againBtn').onclick = startNewGame;
+  $('#againBtn').onclick = restartSameGame;
   $('#backBtn').onclick = () => {
     o.classList.add('hidden');
     $('#gameScreen').classList.add('hidden');
     $('#startScreen').classList.remove('hidden');
+    syncNationSelection();
   };
 }
 
@@ -565,7 +664,8 @@ async function runAI(gen) {
 
   // 2) 推进前线
   for (let guard = 0; guard < 6 && !S.over && S.p[side].kredit > 0 && alive(); guard++) {
-    const movers = S.board[ownRow(side)].filter(u => u && canMove(u))
+    // 远程单位留在支援线就能打敌方支援线 / 总部，推进只会白占前线且暴露自己
+    const movers = S.board[ownRow(side)].filter(u => u && canMove(u) && !isLongRange(cardOf(u)))
       .sort((a,b) => (cardOf(b).atk + b.def) - (cardOf(a).atk + a.def));
     if (!movers.length) break;
     // 高难度更愿意抢前线
@@ -685,12 +785,10 @@ function renderHand() {
 }
 
 function renderBoard() {
-  const targetUid = S.targetMode === 'attack' && S.selectedUnit ? S.selectedUnit : null;
-  let atkTargets = [];
-  if (targetUid) {
-    const f = findUnit(targetUid);
-    if (f) atkTargets = legalTargets('player', f.unit).map(t => t === 'hq' ? 'hq' : t.uid);
-  }
+  // 选中单位后直接高亮：可推进的前线空位 + 合法攻击目标
+  const t = actionTargets(S.selectedUnit);
+  const atkTargets = t.attack;
+  const moveTarget = t.move;
   const spellMode = S.targetMode === 'spell' && S.pending;
 
   const renderRow = (row, container) => {
@@ -706,7 +804,9 @@ function renderBoard() {
           if (ok) drop = 'drop-ok';
         }
       }
-      if (!u) return `<div class="slot ${drop}" data-row="${row}" data-index="${i}"><span class="slot-empty">${drop ? '＋' : ''}</span></div>`;
+      // 选中可推进单位时，前线空位高亮为推进目标
+      const mv = (row === 'front' && moveTarget && !u) ? 'move-target' : '';
+      if (!u) return `<div class="slot ${drop} ${mv}" data-row="${row}" data-index="${i}"><span class="slot-empty">${drop ? '＋' : (mv ? '推进' : '')}</span></div>`;
       const c = cardOf(u);
       const mine = u.owner === 'player';
       let state = '';
@@ -716,17 +816,12 @@ function renderBoard() {
         if (S.selectedUnit === u.uid) state = 'selected-unit';
       }
       if (atkTargets.includes(u.uid) || (spellMode && u.owner === 'foe')) state = 'targetable';
-      const actions = (mine && S.selectedUnit === u.uid && S.phase !== 'target')
-        ? `<div class="unit-actions">
-             <button data-act="move" ${canMove(u) ? '' : 'disabled'}>推进</button>
-             <button data-act="attack" ${canAttack(u) ? '' : 'disabled'}>攻击</button>
-             <button data-act="cancel">取消</button>
-           </div>` : '';
       const kw = hasEffect(c,'guard') ? '<span class="kw">守护</span>'
               : (hasEffect(c,'blitz') ? '<span class="kw">闪击</span>'
-              : (hasEffect(c,'deployFront') ? '<span class="kw">空降</span>' : ''));
+              : (hasEffect(c,'deployFront') ? '<span class="kw">空降</span>'
+              : (isLongRange(c) ? '<span class="kw">远程</span>' : '')));
       return `<div class="slot" data-row="${row}" data-index="${i}">
-        <div class="field-unit">${cardHTML(c, { unit:u, stateClass:state })}${actions}${kw}</div>
+        <div class="field-unit">${cardHTML(c, { unit:u, stateClass:state })}${kw}</div>
       </div>`;
     }).join('');
   };
@@ -782,7 +877,7 @@ function renderInspect() {
   const usable = S.current === 'player'
     ? (card.cost > k ? `指挥点不足 · 需要 ${card.cost} 点` : `可打出 · 消耗 ${card.cost} 点`)
     : '敌方回合';
-  foot.textContent = `${TYPE_META[card.type].name} ｜ 部署 ${card.cost}${isUnit(card) ? ' · 行动 ' + card.op : ''} ｜ ${usable}`;
+  foot.textContent = `${TYPE_META[card.type].name}${isLongRange(card) ? ' · 远程' : ''} ｜ 部署 ${card.cost}${isUnit(card) ? ' · 行动 ' + card.op : ''} ｜ ${usable}`;
 }
 
 /* ---------------- 交互 ---------------- */
@@ -832,52 +927,26 @@ function bindGameEvents() {
   gs.addEventListener('click', e => {
     if (!S || S.over || S.phase === 'ai' || S.current !== 'player') return;
 
-    // 单位行动按钮
-    const act = e.target.closest('.unit-actions button');
-    if (act) {
-      e.stopPropagation();
-      const uid = S.selectedUnit;
-      if (act.dataset.act === 'cancel') { clearSelection(); return; }
-      if (act.dataset.act === 'move') { moveUnit(uid); clearSelection(); return; }
-      if (act.dataset.act === 'attack') {
-        const f = findUnit(uid);
-        if (!f || !canAttack(f.unit)) { showHint('该单位本回合无法攻击', true); return; }
-        S.targetMode = 'attack'; S.phase = 'target';
-        showHint('点击高亮的敌方单位或敌方总部进行攻击', true);
-        render(); return;
-      }
-    }
-
     const cardEl = e.target.closest('.card');
     const slotEl = e.target.closest('.slot');
     const hqEl  = e.target.closest('.hq');
 
-    // 目标选择模式
-    if (S.phase === 'target') {
+    // 指令卡选目标（法术伤害）——保留原流程；单位攻击已改为「选中即高亮，点高亮即攻击」
+    if (S.phase === 'target' && S.targetMode === 'spell') {
       // 点击空白处取消；若指挥点已耗尽，取消后仍需自动结束回合
       if (!cardEl && !hqEl) { clearSelection(); afterKreditSpent('player'); return; }
-      if (S.targetMode === 'attack') {
-        if (hqEl && hqEl.id === 'foeHQ') { attack(S.selectedUnit, 'hq'); return; }
-        if (cardEl && cardEl.dataset.uid) {
-          const f = findUnit(cardEl.dataset.uid);
-          if (f && f.unit.owner === 'foe') { attack(S.selectedUnit, f.unit); return; }
+      if (cardEl && cardEl.dataset.uid) {
+        const f = findUnit(cardEl.dataset.uid);
+        if (f && f.unit.owner === 'foe' && S.pending) {
+          const v = S.pending.value, src = S.pending.source;
+          S.pending = null; S.targetMode = null; S.phase = 'idle';
+          dealSpellDamage(f.unit, v, src);
+          clearSelection(); render();
+          afterKreditSpent('player');   // 选完目标后再判断是否需要自动结束
+          return;
         }
-        showHint('请点击高亮的目标', true); return;
       }
-      if (S.targetMode === 'spell') {
-        if (cardEl && cardEl.dataset.uid) {
-          const f = findUnit(cardEl.dataset.uid);
-          if (f && f.unit.owner === 'foe' && S.pending) {
-            const v = S.pending.value, src = S.pending.source;
-            S.pending = null; S.targetMode = null; S.phase = 'idle';
-            dealSpellDamage(f.unit, v, src);
-            clearSelection(); render();
-            afterKreditSpent('player');   // 选完目标后再判断是否需要自动结束
-            return;
-          }
-        }
-        showHint('请选择 1 个敌方单位', true); return;
-      }
+      showHint('请选择 1 个敌方单位', true); return;
     }
 
     // 手牌
@@ -887,6 +956,7 @@ function bindGameEvents() {
       const c = CARD_INDEX[h.id];
       if (c.cost > S.p.player.kredit) { showHint(`指挥点不足：需要 ${c.cost} 点`, true); return; }
       if (S.selectedHand === h.uid) { clearSelection(); return; }
+      if (S.selectedUnit) clearSelection();   // 从「选中单位」态无缝切到手牌
       S.selectedHand = h.uid; S.selectedUnit = null;
 
       if (!isUnit(c)) {
@@ -922,19 +992,45 @@ function bindGameEvents() {
       return;
     }
 
-    // 选中己方单位
-    if (cardEl && cardEl.dataset.uid) {
-      const f = findUnit(cardEl.dataset.uid);
-      if (f && f.unit.owner === 'player') {
-        S.selectedUnit = f.unit.uid; S.selectedHand = null; S.targetMode = null;
-        S.pending = null; S.phase = 'idle';
-        if (!canAct(f.unit)) showHint('该单位刚部署，需等待下回合（闪击除外）', true);
-        render(); return;
+    // 已选中单位：点高亮处直接推进 / 攻击，无需再点任何按钮
+    if (S.selectedUnit) {
+      const uid = S.selectedUnit;
+      const t = actionTargets(uid);
+      if (!t.unit) { clearSelection(); return; }
+
+      // 敌方总部
+      if (hqEl && hqEl.id === 'foeHQ') {
+        if (t.attack.includes('hq')) { attack(uid, 'hq'); return; }
+        showHint('当前单位无法攻击总部：需先推进到前线，或使用远程单位', true); return;
       }
-      if (f && f.unit.owner === 'foe') { showHint('敌方单位：先选中我方单位再攻击', true); return; }
+      // 场上单位
+      if (cardEl && cardEl.dataset.uid) {
+        const tf = findUnit(cardEl.dataset.uid);
+        if (tf && tf.unit.owner === 'foe') {
+          if (t.attack.includes(tf.unit.uid)) { attack(uid, tf.unit); return; }
+          showHint('目标不可攻击：守护优先 / 制空限制 / 距离不足', true); return;
+        }
+        if (tf && tf.unit.owner === 'player') {
+          if (tf.unit.uid === uid) clearSelection(); else selectUnit(tf.unit.uid);  // 再点自己取消 / 点友军切换
+          return;
+        }
+      }
+      // 高亮的前线空位 → 推进
+      if (slotEl && slotEl.dataset.row === 'front' && t.move && !S.board.front[+slotEl.dataset.index]) {
+        moveUnit(uid); clearSelection(); afterKreditSpent('player'); return;
+      }
+      // 点其它空白 → 取消选中
+      clearSelection(); afterKreditSpent('player'); return;
     }
 
-    if (hqEl && hqEl.id === 'foeHQ') { showHint('需先将单位推进到前线并清空敌方前线单位', true); return; }
+    // 未选中时：点击己方单位即选中，并高亮可推进 / 可攻击目标
+    if (cardEl && cardEl.dataset.uid) {
+      const f = findUnit(cardEl.dataset.uid);
+      if (f && f.unit.owner === 'player') { selectUnit(f.unit.uid); return; }
+      if (f && f.unit.owner === 'foe') { showHint('敌方单位：先点选我方单位，再点它攻击', true); return; }
+    }
+
+    if (hqEl && hqEl.id === 'foeHQ') { showHint('点选我方单位后，再点敌方总部攻击（需前线单位或远程单位）', true); return; }
     clearSelection();
   });
 
@@ -993,16 +1089,65 @@ function applyTheme(t) {
   try { localStorage.setItem('kards-theme', t); } catch (e) {}
   syncThemeIcon(t);
 }
+/* ---------------- 隐藏阵营：连按 10 次主题切换直接进入国民党对局 ---------------- */
+const SECRET_TAPS = 10;          // 触发所需点击次数
+const SECRET_TAP_WINDOW = 3000;  // 两次点击间隔超过 3 秒则重新计数
+let secretTaps = 0;
+let secretLastTap = 0;
+
+function onThemeToggleTap() {
+  applyTheme(document.body.classList.contains('theme-modern') ? 'classic' : 'modern');
+
+  const now = Date.now();
+  if (now - secretLastTap > SECRET_TAP_WINDOW) secretTaps = 0;
+  secretLastTap = now;
+  secretTaps++;
+  if (secretTaps < SECRET_TAPS) return;
+
+  secretTaps = 0;
+  secretLastTap = 0;
+  // 只把国民党作为这一局的临时阵营，不动 chosenNation 与开始页的高亮：
+  // 否则返回主界面后界面无高亮、内部却是 ktm，重开就会「选的和玩的不一致」
+  secretNationOnce = SECRET_NATION;
+  startNewGame();
+  log('隐藏阵营解锁：国民党 · 持久抗战！', 'sys');
+}
+
 function initTheme() {
   let saved = 'classic';
   try { saved = localStorage.getItem('kards-theme') === 'modern' ? 'modern' : 'classic'; } catch (e) {}
   applyTheme(saved);
-  $$('[data-theme-toggle]').forEach(b => b.addEventListener('click', () => {
-    applyTheme(document.body.classList.contains('theme-modern') ? 'classic' : 'modern');
-  }));
+  $$('[data-theme-toggle]').forEach(b => b.addEventListener('click', onThemeToggleTap));
 }
 
 /* ---------------- 启动 ---------------- */
 initTheme();
 initStartScreen();
 bindGameEvents();
+initAudioAndFx();
+
+// 首次用户手势解锁 Web Audio（浏览器自动播放策略要求）。
+// 捕获阶段监听，保证在任何按钮的业务逻辑之前解锁。
+function initAudioAndFx() {
+  const unlockOnce = () => {
+    SFX.unlock();
+    window.removeEventListener('pointerdown', unlockOnce, true);
+    window.removeEventListener('keydown', unlockOnce, true);
+  };
+  window.addEventListener('pointerdown', unlockOnce, true);
+  window.addEventListener('keydown', unlockOnce, true);
+
+  const btn = $('#soundBtn');
+  const paint = () => {
+    if (!btn) return;
+    const m = SFX.isMuted();
+    btn.classList.toggle('muted', m);
+    btn.textContent = m ? '✕' : '♪';
+    btn.title = m ? '开启音效' : '静音';
+  };
+  paint();
+  if (btn) btn.addEventListener('click', () => {
+    SFX.toggle(); paint();
+    if (!SFX.isMuted()) SFX.play('click');
+  });
+}

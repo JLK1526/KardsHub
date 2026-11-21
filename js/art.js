@@ -23,7 +23,8 @@ const SKY = {
   usa: [['#4c5b46','#9aa066','#e0c284'], ['#3d5250','#839a78','#dcc189'], ['#54503c','#a09359','#e6c88a']],
   uk:  [['#6b5a43','#b09568','#e3c48d'], ['#4b4a42','#9c8a68','#d9b984'], ['#5c5140','#a58c60','#e0bd82']],
   sov: [['#4d5560','#8a95a0','#d6bd9e'], ['#3c4a4a','#7c8a82','#cbb89a'], ['#524a48','#9a8770','#d9b89a']],
-  jpn: [['#3f5a5a','#86a39a','#e0c79a'], ['#4a4e6a','#8a8fb0','#dcc6a0'], ['#5a4a44','#a08770','#e3c79a']]
+  jpn: [['#3f5a5a','#86a39a','#e0c79a'], ['#4a4e6a','#8a8fb0','#dcc6a0'], ['#5a4a44','#a08770','#e3c79a']],
+  ktm: [['#354a68','#7b90ac','#d8e2ee'], ['#3a4656','#8898a8','#d4dce4'], ['#2e4058','#748aa4','#dbe4ec']]
 };
 
 /* 主插画：viewBox 0 0 200 150 */
@@ -200,7 +201,11 @@ function nationBadge(n, size) {
             <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(300)"/>
             <path d="M-1.3,-13 L1.3,-13 L0.6,-8 Z" transform="rotate(330)"/>
             <circle cx="0" cy="0" r="5"/>
-          </g>`
+          </g>`,
+    ktm: `<rect x="4" y="4" width="24" height="24" rx="3" fill="#203454"/>
+          <path d="M16,6.5 l1.5,3.2 3.5,.5 -2.5,2.5 .6,3.5 -3.1,-1.7 -3.1,1.7 .6,-3.5 -2.5,-2.5 3.5,-5 z" fill="#eef3fa"/>
+          <path d="M6,24 l3,-5 3,2 4,-6 4,4 6,-3 v8 z" fill="#c8d8ee"/>
+          <g stroke="#203454" stroke-width="1"><path d="M8.5,21.5 v2.5 M13.5,20.5 v3.5 M18.5,18 v6 M23,18 v6"/></g>`
   };
   return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">${inner[n] || ''}</svg>`;
 }

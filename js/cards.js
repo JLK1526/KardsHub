@@ -28,6 +28,12 @@ const NATION_META = {
     key: 'jpn', name: '日本', en: 'JAPAN', short: '日',
     color: '#c2683f', dark: '#4a221a', light: '#ecccae', accent: '#e4b24a',
     motto: '奇袭突击 · 海军航空 · 死战不退'
+  },
+  /* 隐藏阵营：连按 10 次主题切换按钮解锁 */
+  ktm: {
+    key: 'ktm', name: '国民党', en: 'KUOMINTANG', short: '国',
+    color: '#5a7396', dark: '#26354b', light: '#c4d2e2', accent: '#e8eef5',
+    motto: '持久抗战 · 德械精锐 · 美援空军'
   }
 };
 
@@ -122,7 +128,21 @@ const CARD_LIST = [
   { id:'j09', n:'jpn', name:'三式中战车', en:'Type 3 Chi-Nu', type:'tank', cost:5, op:2, atk:3, def:6, rarity:'rare', text:'守护：敌军必须优先攻击守护单位。', effects:[{kind:'guard'}] },
   { id:'j10', n:'jpn', name:'四式战车', en:'Type 4 Chi-To', type:'tank', cost:7, op:2, atk:6, def:6, rarity:'legendary', text:'部署：抽 1 张牌。', effects:[{kind:'draw',value:1}] },
   { id:'j11', n:'jpn', name:'玉碎突击', en:'Banzai Charge', type:'order', cost:2, op:0, atk:0, def:0, rarity:'common', text:'本回合获得 2 点指挥点，抽 1 张牌。', effects:[{kind:'kredit',value:2},{kind:'draw',value:1}] },
-  { id:'j12', n:'jpn', name:'珍珠港奇袭', en:'Pearl Harbor', type:'order', cost:4, op:0, atk:0, def:0, rarity:'rare', text:'对 1 个敌方单位造成 4 点伤害。', effects:[{kind:'damage',value:4}] }
+  { id:'j12', n:'jpn', name:'珍珠港奇袭', en:'Pearl Harbor', type:'order', cost:4, op:0, atk:0, def:0, rarity:'rare', text:'对 1 个敌方单位造成 4 点伤害。', effects:[{kind:'damage',value:4}] },
+
+  /* ---------------- 国民党（隐藏阵营） ---------------- */
+  { id:'k01', n:'ktm', name:'国民革命军步兵', en:'National Revolutionary Army', type:'infantry', cost:1, op:1, atk:1, def:2, rarity:'common', text:'抗战建国的基础步兵。', effects:[] },
+  { id:'k02', n:'ktm', name:'大刀队', en:'Big Sword Unit', type:'infantry', cost:2, op:1, atk:3, def:1, rarity:'common', text:'闪击：部署的当回合即可行动。', effects:[{kind:'blitz'}] },
+  { id:'k03', n:'ktm', name:'中央军校教导总队', en:'Central Military Academy', type:'infantry', cost:3, op:1, atk:2, def:3, rarity:'common', text:'守护：敌军必须优先攻击守护单位。', effects:[{kind:'guard'}] },
+  { id:'k04', n:'ktm', name:'德械师', en:'German-trained Division', type:'infantry', cost:4, op:1, atk:3, def:4, rarity:'rare', text:'守护：敌军必须优先攻击守护单位。', effects:[{kind:'guard'}] },
+  { id:'k05', n:'ktm', name:'国军炮兵团', en:'Nationalist Artillery', type:'artillery', cost:3, op:1, atk:3, def:3, rarity:'common', text:'可在支援线直接炮击敌方后方。', effects:[] },
+  { id:'k06', n:'ktm', name:'战车防御炮', en:'Anti-tank Gun', type:'artillery', cost:3, op:1, atk:2, def:3, rarity:'rare', text:'攻击坦克时 +3 攻击力。', effects:[{kind:'bonusVsTank',value:3}] },
+  { id:'k07', n:'ktm', name:'中国空军', en:'Chinese Air Force', type:'fighter', cost:2, op:1, atk:2, def:2, rarity:'common', text:'保卫领空的早期空军力量。', effects:[] },
+  { id:'k08', n:'ktm', name:'飞虎队', en:'Flying Tigers', type:'fighter', cost:4, op:1, atk:4, def:3, rarity:'epic', text:'攻击飞机时 +2 伤害。', effects:[{kind:'bonusVsAir',value:2}] },
+  { id:'k09', n:'ktm', name:'中国远征军', en:'Chinese Expeditionary Force', type:'infantry', cost:5, op:2, atk:4, def:5, rarity:'epic', text:'空降：直接部署到前线。', effects:[{kind:'deployFront'}] },
+  { id:'k10', n:'ktm', name:'滇缅公路', en:'Burma Road', type:'order', cost:3, op:0, atk:0, def:0, rarity:'common', text:'本回合获得 2 点指挥点，抽 1 张牌。', effects:[{kind:'kredit',value:2},{kind:'draw',value:1}] },
+  { id:'k11', n:'ktm', name:'台儿庄大捷', en:'Battle of Taierzhuang', type:'order', cost:4, op:0, atk:0, def:0, rarity:'rare', text:'对 1 个敌方单位造成 4 点伤害。', effects:[{kind:'damage',value:4}] },
+  { id:'k12', n:'ktm', name:'持久战', en:'Protracted War', type:'order', cost:2, op:0, atk:0, def:0, rarity:'common', text:'抽 1 张牌，己方总部回复 3 点。', effects:[{kind:'draw',value:1},{kind:'healHQ',value:3}] }
 ];
 
 const CARD_INDEX = Object.fromEntries(CARD_LIST.map(c => [c.id, c]));
@@ -160,4 +180,6 @@ function effectValue(card, kind) {
   return e ? (e.value || 0) : 0;
 }
 function isAir(card) { return card.type === 'fighter' || card.type === 'bomber'; }
+// 远程单位：火炮 / 战斗机 / 轰炸机可从己方支援线攻击敌方支援线与总部
+function isLongRange(card) { return card.type === 'artillery' || card.type === 'fighter' || card.type === 'bomber'; }
 function isUnit(card) { return card.type !== 'order'; }
